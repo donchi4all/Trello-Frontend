@@ -1,23 +1,57 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Home from "../views/Home.vue";
+import Login from "../views/auth/Login";
+import Register from "../views/auth/Register";
+import Index from "../views/index";
+import Board from "../views/Board";
+
+import store from "../store";
 
 Vue.use(VueRouter);
 
 const routes = [
   {
-    path: "/",
-    name: "Home",
-    component: Home,
+    path: "/login",
+    name: "Login",
+    component: Login,
   },
   {
-    path: "/about",
-    name: "About",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/About.vue"),
+    path: "/register",
+    name: "Register",
+    component: Register,
+  },
+  {
+    path: "/logout",
+    name: "logout",
+    meta: { requireAuth: true },
+    async beforeEnter(_, __, next) {
+      await store.dispatch("auth/logout");
+      next("/login");
+    },
+  },
+  /*
+|--------------------------------------------------------------------------
+| AUTHENTICATION ROUTES
+|--------------------------------------------------------------------------
+*/
+  {
+    path: "/",
+    component: () => import("../views/MainIndex"),
+    meta: { requireAuth: true },
+    children: [
+      {
+        path: "",
+        meta: { requireAuth: true },
+        name: "Board",
+        component: Board,
+      },
+      {
+        path: ":id",
+        name: "SingleBoard",
+        props: true,
+        component: Index
+      }
+    ],
   },
 ];
 
